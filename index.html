@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strategy Dashboard</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #131722;
+      color: #d1d4dc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #2a2e39;
+      background: #1e222d;
+    }
+    header h1 { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.5px; }
+    #last-updated { font-size: 12px; color: #787b86; }
+
+    /* ── Main layout ── */
+    main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+    section { margin-bottom: 28px; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #787b86;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    /* ── mNAV config ── */
+    .config-bar {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      background: #1e222d;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      padding: 12px 16px;
+      flex-wrap: wrap;
+    }
+    .config-item { display: flex; align-items: center; gap: 8px; }
+    .config-item label { font-size: 12px; color: #787b86; white-space: nowrap; }
+    .config-item input {
+      background: #131722;
+      border: 1px solid #2a2e39;
+      border-radius: 4px;
+      color: #d1d4dc;
+      font-size: 13px;
+      padding: 4px 8px;
+      width: 140px;
+    }
+    .config-item input:focus { outline: none; border-color: #2196f3; }
+    #refresh-btn {
+      background: #2196f3;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 5px 14px;
+    }
+    #refresh-btn:hover { background: #1976d2; }
+
+    /* ── Price Cards ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 500px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .card {
+      background: #1e222d;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .card .ticker { font-size: 11px; font-weight: 700; color: #787b86; letter-spacing: 1px; }
+    .card .price  { font-size: 20px; font-weight: 600; color: #fff; margin: 6px 0 4px; }
+    .card .change { font-size: 12px; font-weight: 500; }
+    .up   { color: #26a69a; }
+    .down { color: #ef5350; }
+    .flat { color: #787b86; }
+
+    /* ── Charts ── */
+    .chart-wrap {
+      background: #1e222d;
+      border: 1px solid #2a2e39;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 8px;
+      border-bottom: 1px solid #2a2e39;
+    }
+    .chart-title { font-size: 13px; font-weight: 600; color: #d1d4dc; }
+    .chart-subtitle { font-size: 11px; color: #787b86; }
+
+    .chart-container { width: 100%; height: 280px; }
+    .chart-container.tall { height: 320px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      padding: 8px 16px;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #d1d4dc; }
+    .legend-dot { width: 10px; height: 3px; border-radius: 2px; }
+
+    /* ── mNAV reference lines info ── */
+    .mnav-info {
+      padding: 6px 16px 10px;
+      font-size: 11px;
+      color: #787b86;
+    }
+
+    /* ── Loading / Error ── */
+    .status-msg {
+      text-align: center;
+      padding: 40px;
+      color: #787b86;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Strategy Dashboard</h1>
+  <span id="last-updated">로딩 중...</span>
+</header>
+
+<main>
+
+  <!-- mNAV 설정 -->
+  <section>
+    <div class="section-title">mNAV 계산 설정</div>
+    <div class="config-bar">
+      <div class="config-item">
+        <label>Strategy BTC 보유량</label>
+        <input type="number" id="btc-holdings" value="738731" />
+      </div>
+      <div class="config-item">
+        <label>MSTR 발행주식수</label>
+        <input type="number" id="mstr-shares" value="342225000" />
+      </div>
+      <button id="refresh-btn" onclick="renderAll()">차트 갱신</button>
+    </div>
+  </section>
+
+  <!-- 가격 카드 -->
+  <section>
+    <div class="section-title">현재 가격</div>
+    <div class="cards-grid" id="cards-grid">
+      <div class="status-msg" style="grid-column:1/-1">로딩 중...</div>
+    </div>
+  </section>
+
+  <!-- mNAV 차트 -->
+  <section>
+    <div class="section-title">mNAV (MSTR 프리미엄)</div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">mNAV = MSTR 시총 ÷ (BTC 보유량 × BTC 가격)</span>
+        <span class="chart-subtitle" id="mnav-current">—</span>
+      </div>
+      <div class="chart-container tall" id="chart-mnav"></div>
+      <div class="mnav-info">참고: 역사적 범위 약 1.5x ~ 3.5x</div>
+    </div>
+  </section>
+
+  <!-- BTC / MSTR 차트 -->
+  <div class="two-col" style="margin-bottom:28px">
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">BTC</span>
+        <span class="chart-subtitle">USD</span>
+      </div>
+      <div class="chart-container" id="chart-btc"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">MSTR</span>
+        <span class="chart-subtitle">USD</span>
+      </div>
+      <div class="chart-container" id="chart-mstr"></div>
+    </div>
+  </div>
+
+  <!-- 우선주 차트 -->
+  <section>
+    <div class="section-title">우선주</div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">STRF / STRK / STRC / STRD</span>
+        <span class="chart-subtitle">USD</span>
+      </div>
+      <div class="legend" id="pref-legend"></div>
+      <div class="chart-container" id="chart-pref"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────
+//  설정 상수 (공시 업데이트 시 수정)
+// ─────────────────────────────────────────────
+const TICKERS = ['btc', 'mstr', 'strf', 'strk', 'strc', 'strd'];
+
+const CARD_LABELS = {
+  btc: 'BTC', mstr: 'MSTR',
+  strf: 'STRF', strk: 'STRK', strc: 'STRC', strd: 'STRD'
+};
+
+const PREF_COLORS = {
+  strf: '#2196f3',
+  strk: '#ff9800',
+  strc: '#4caf50',
+  strd: '#e91e63'
+};
+
+const CHART_OPTIONS = {
+  layout: { background: { color: '#1e222d' }, textColor: '#787b86' },
+  grid: { vertLines: { color: '#2a2e39' }, horzLines: { color: '#2a2e39' } },
+  timeScale: { borderColor: '#2a2e39', timeVisible: true },
+  rightPriceScale: { borderColor: '#2a2e39' },
+  crosshair: { mode: 1 },
+};
+
+// ─────────────────────────────────────────────
+//  CSV 로드
+// ─────────────────────────────────────────────
+async function loadCSV(ticker) {
+  const res = await fetch(`data/${ticker}.csv`);
+  const text = await res.text();
+  const lines = text.trim().split('\n').slice(1); // 헤더 제거
+  return lines
+    .filter(l => l.trim())
+    .map(l => {
+      const [date, price] = l.split(',');
+      return { time: date.trim(), value: parseFloat(price.trim()) };
+    })
+    .filter(d => !isNaN(d.value));
+}
+
+// ─────────────────────────────────────────────
+//  가격 카드 렌더링
+// ─────────────────────────────────────────────
+function renderCards(dataMap) {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+
+  for (const ticker of TICKERS) {
+    const data = dataMap[ticker];
+    if (!data || data.length === 0) continue;
+
+    const last  = data[data.length - 1].value;
+    const prev  = data.length > 1 ? data[data.length - 2].value : last;
+    const diff  = last - prev;
+    const pct   = ((diff / prev) * 100).toFixed(2);
+    const cls   = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+    const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
+
+    const isBTC = ticker === 'btc';
+    const priceStr = isBTC
+      ? '$' + last.toLocaleString('en-US', { maximumFractionDigits: 0 })
+      : '$' + last.toFixed(2);
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="ticker">${CARD_LABELS[ticker]}</div>
+      <div class="price">${priceStr}</div>
+      <div class="change ${cls}">${arrow} ${Math.abs(pct)}%</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  차트 생성 헬퍼
+// ─────────────────────────────────────────────
+function createChart(containerId, extraOptions = {}) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const chart = LightweightCharts.createChart(el, {
+    ...CHART_OPTIONS,
+    ...extraOptions,
+    width: el.clientWidth,
+    height: el.clientHeight,
+  });
+  window.addEventListener('resize', () => {
+    chart.applyOptions({ width: el.clientWidth });
+  });
+  return chart;
+}
+
+// ─────────────────────────────────────────────
+//  mNAV 계산
+// ─────────────────────────────────────────────
+function calcMNAV(mstrData, btcData) {
+  const btcHoldings = parseFloat(document.getElementById('btc-holdings').value);
+  const mstrShares  = parseFloat(document.getElementById('mstr-shares').value);
+  if (!btcHoldings || !mstrShares) return [];
+
+  const btcMap = {};
+  btcData.forEach(d => { btcMap[d.time] = d.value; });
+
+  return mstrData
+    .filter(d => btcMap[d.time])
+    .map(d => ({
+      time: d.time,
+      value: parseFloat(((d.value * mstrShares) / (btcHoldings * btcMap[d.time])).toFixed(4))
+    }));
+}
+
+// ─────────────────────────────────────────────
+//  전체 렌더링
+// ─────────────────────────────────────────────
+async function renderAll() {
+  // 데이터 로드
+  const dataMap = {};
+  await Promise.all(
+    TICKERS.map(async t => { dataMap[t] = await loadCSV(t); })
+  );
+
+  // 카드
+  renderCards(dataMap);
+
+  // mNAV 차트
+  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc']);
+  if (mnavData.length > 0) {
+    const mnavChart = createChart('chart-mnav', {});
+    const mnavSeries = mnavChart.addLineSeries({
+      color: '#f59e0b',
+      lineWidth: 2,
+      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+    });
+
+    // 1.0 기준선 (Baseline)
+    const baselineSeries = mnavChart.addLineSeries({
+      color: '#4b5563',
+      lineWidth: 1,
+      lineStyle: 2, // dashed
+      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+    });
+    baselineSeries.setData(
+      mnavData.map(d => ({ time: d.time, value: 1.0 }))
+    );
+
+    mnavSeries.setData(mnavData);
+    mnavChart.timeScale().fitContent();
+
+    const latest = mnavData[mnavData.length - 1].value;
+    document.getElementById('mnav-current').textContent = `현재 ${latest.toFixed(3)}x`;
+  }
+
+  // BTC 차트
+  const btcChart = createChart('chart-btc');
+  const btcSeries = btcChart.addAreaSeries({
+    lineColor: '#f7931a',
+    topColor: 'rgba(247,147,26,0.3)',
+    bottomColor: 'rgba(247,147,26,0.0)',
+    lineWidth: 2,
+  });
+  btcSeries.setData(dataMap['btc']);
+  btcChart.timeScale().fitContent();
+
+  // MSTR 차트
+  const mstrChart = createChart('chart-mstr');
+  const mstrSeries = mstrChart.addAreaSeries({
+    lineColor: '#ff6b35',
+    topColor: 'rgba(255,107,53,0.3)',
+    bottomColor: 'rgba(255,107,53,0.0)',
+    lineWidth: 2,
+  });
+  mstrSeries.setData(dataMap['mstr']);
+  mstrChart.timeScale().fitContent();
+
+  // 우선주 차트
+  const prefTickers = ['strf', 'strk', 'strc', 'strd'];
+  const prefChart = createChart('chart-pref');
+  prefTickers.forEach(t => {
+    if (!dataMap[t] || dataMap[t].length === 0) return;
+    const series = prefChart.addLineSeries({
+      color: PREF_COLORS[t],
+      lineWidth: 2,
+    });
+    series.setData(dataMap[t]);
+  });
+  prefChart.timeScale().fitContent();
+
+  // 우선주 범례
+  const legend = document.getElementById('pref-legend');
+  legend.innerHTML = prefTickers.map(t => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${PREF_COLORS[t]}"></div>
+      ${t.toUpperCase()}
+    </div>
+  `).join('');
+
+  // 마지막 갱신 시각
+  const btcLast = dataMap['btc'];
+  const lastDate = btcLast[btcLast.length - 1]?.time ?? '—';
+  document.getElementById('last-updated').textContent = `데이터 기준: ${lastDate}`;
+}
+
+// ─────────────────────────────────────────────
+//  초기 실행
+// ─────────────────────────────────────────────
+renderAll().catch(err => {
+  console.error(err);
+  document.getElementById('cards-grid').innerHTML =
+    `<div class="status-msg" style="grid-column:1/-1; color:#ef5350">
+      데이터 로딩 실패. 로컬 서버로 실행해주세요.<br>
+      <code style="font-size:11px; color:#787b86">python3 -m http.server 8080</code>
+     </div>`;
+});
+</script>
+</body>
+</html>
