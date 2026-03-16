@@ -122,6 +122,10 @@
         <label>MSTR 발행주식수 (최신)</label>
         <span id="display-mstr-shares" style="color:#d1d4dc;font-size:13px;">—</span>
       </div>
+      <div class="config-item">
+        <label>총 금융부채 (최신 공시)</label>
+        <span id="display-mstr-debt" style="color:#ef5350;font-size:13px;">—</span>
+      </div>
       <span style="font-size:11px;color:#787b86;">공시 이력 반영 · 날짜별 실제값 적용</span>
     </div>
   </section>
@@ -152,7 +156,7 @@
     <div class="section-title" style="text-transform:none;">mNAV (MSTR 프리미엄)</div>
     <div class="chart-wrap">
       <div class="chart-header">
-        <span class="chart-title">mNAV = MSTR 시총 ÷ (BTC 보유량 × BTC 가격)</span>
+        <span class="chart-title">mNAV = MSTR 시총 ÷ (BTC 보유량 × BTC 가격 − 총 금융부채)</span>
         <span class="chart-subtitle" id="mnav-current">—</span>
       </div>
       <div class="chart-container tall" id="chart-mnav"></div>
@@ -272,16 +276,22 @@ function getStepValue(history, date) {
 // ─────────────────────────────────────────────
 //  mNAV 계산
 // ─────────────────────────────────────────────
-function calcMNAV(mstrData, btcData, holdingsHist, sharesHist) {
+function calcMNAV(mstrData, btcData, holdingsHist, sharesHist, debtHist) {
   const btcMap = {};
   btcData.forEach(d => { btcMap[d.time] = d.value; });
   return mstrData
     .filter(d => btcMap[d.time])
-    .map(d => ({
-      time: d.time,
-      value: parseFloat(((d.value * getStepValue(sharesHist, d.time)) /
-                         (getStepValue(holdingsHist, d.time) * btcMap[d.time])).toFixed(4))
-    }));
+    .map(d => {
+      const btcNav = getStepValue(holdingsHist, d.time) * btcMap[d.time];
+      const debt   = getStepValue(debtHist, d.time);
+      const netNav = btcNav - debt;
+      if (netNav <= 0) return null;
+      return {
+        time: d.time,
+        value: parseFloat(((d.value * getStepValue(sharesHist, d.time)) / netNav).toFixed(4))
+      };
+    })
+    .filter(d => d !== null);
 }
 
 // ─────────────────────────────────────────────
@@ -364,17 +374,21 @@ async function renderAll() {
   await Promise.all(TICKERS.map(async t => { dataMap[t] = await loadCSV(t); }));
   const holdingsHist = await loadCSV('btc_holdings');
   const sharesHist   = await loadCSV('mstr_shares');
+  const debtHist     = await loadCSV('mstr_debt');
 
   // config 표시
   const lh = holdingsHist[holdingsHist.length - 1];
   const ls = sharesHist[sharesHist.length - 1];
+  const ld = debtHist[debtHist.length - 1];
   document.getElementById('display-btc-holdings').textContent =
     lh.value.toLocaleString('en-US') + ' BTC  (' + lh.time + ')';
   document.getElementById('display-mstr-shares').textContent =
     ls.value.toLocaleString('en-US') + '주  (' + ls.time + ')';
+  document.getElementById('display-mstr-debt').textContent =
+    '$' + (ld.value / 1e9).toFixed(2) + 'B  (' + ld.time + ')';
 
-  // mNAV 계산
-  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc'], holdingsHist, sharesHist);
+  // mNAV 계산 (부채 차감)
+  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc'], holdingsHist, sharesHist, debtHist);
 
   // 카드
   renderCards(dataMap, mnavData);

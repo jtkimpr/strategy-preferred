@@ -30,7 +30,7 @@ def read_csv_latest(filename):
     return last["date"], float(last[list(last.keys())[1]])
 
 
-def append_csv_if_changed(filename, date, new_value, col_name):
+def append_csv_if_changed(filename, date, new_value, col_name, allow_decrease=False):
     """최신값과 다를 때만 CSV에 행 추가"""
     path = os.path.join(DATA_DIR, filename)
     with open(path, newline='', encoding='utf-8') as f:
@@ -42,8 +42,8 @@ def append_csv_if_changed(filename, date, new_value, col_name):
         print(f"{filename}: 변화 없음 ({int(new_value):,}) — 스킵")
         return False
 
-    # 주식수·보유량이 이전보다 감소하면 데이터 이상으로 간주 → 스킵
-    if latest_val is not None and int(new_value) < int(latest_val):
+    # 주식수·보유량이 이전보다 감소하면 데이터 이상으로 간주 → 스킵 (부채는 예외)
+    if not allow_decrease and latest_val is not None and int(new_value) < int(latest_val):
         print(f"{filename}: 신규값({int(new_value):,})이 현재값({int(latest_val):,})보다 낮음 — 데이터 이상, 스킵")
         return False
 
@@ -103,6 +103,36 @@ def fetch_btc_holdings_from_edgar():
     raise ValueError("최신 8-K에서 BTC 보유량을 찾을 수 없음")
 
 
+def fetch_mstr_debt_from_edgar():
+    """SEC EDGAR XBRL에서 Strategy 총 금융부채(LongTermDebt) 조회"""
+    url = "https://data.sec.gov/api/xbrl/companyfacts/CIK0001050446.json"
+    req = urllib.request.Request(url, headers={"User-Agent": SEC_USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as res:
+        data = json.loads(res.read())
+
+    lt_debt_entries = (
+        data.get("facts", {})
+            .get("us-gaap", {})
+            .get("LongTermDebt", {})
+            .get("units", {})
+            .get("USD", [])
+    )
+    if not lt_debt_entries:
+        raise ValueError("EDGAR XBRL에서 LongTermDebt 데이터를 찾을 수 없음")
+
+    # 10-K / 10-Q 연간·분기 보고서 기준, 가장 최근 기간 종료일 기준으로 선택
+    quarterly = [
+        e for e in lt_debt_entries
+        if e.get("form") in ("10-K", "10-Q") and e.get("end") and e.get("val") is not None
+    ]
+    if not quarterly:
+        raise ValueError("10-K/10-Q 부채 데이터 없음")
+
+    quarterly.sort(key=lambda x: (x["end"], x.get("filed", "")))
+    latest = quarterly[-1]
+    return latest["end"], int(latest["val"])
+
+
 def fetch_mstr_shares_from_finnhub():
     """Finnhub에서 MSTR 발행주식수 조회 (수일 지연 가능)"""
     url = f"https://finnhub.io/api/v1/stock/profile2?symbol=MSTR&token={FINNHUB_API_KEY}"
@@ -134,6 +164,15 @@ def main():
     except Exception as e:
         print(f"[오류] MSTR 주식수: {e}")
         errors.append("mstr_shares")
+
+    # 3. 총 금융부채
+    print("\n=== 총 금융부채 업데이트 (SEC EDGAR XBRL) ===")
+    try:
+        debt_date, debt = fetch_mstr_debt_from_edgar()
+        append_csv_if_changed("mstr_debt.csv", debt_date, debt, "debt", allow_decrease=True)
+    except Exception as e:
+        print(f"[오류] 금융부채: {e}")
+        errors.append("mstr_debt")
 
     if errors:
         print(f"\n실패 항목: {', '.join(errors)}")
