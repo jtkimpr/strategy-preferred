@@ -200,13 +200,23 @@
 const TICKERS = ['btc', 'mstr', 'strf', 'strk', 'strc', 'strd'];
 
 const COLORS = {
-  mnav: '#f59e0b',
+  mnav: '#facc15',
   btc:  '#f7931a',
   mstr: '#ff6b35',
   strf: '#2196f3',
-  strk: '#ff9800',
+  strk: '#a855f7',
   strc: '#4caf50',
   strd: '#e91e63',
+};
+
+const LABELS = {
+  mnav: 'mNAV',
+  btc:  'BTC',
+  mstr: 'MSTR',
+  strf: 'STRF',
+  strk: 'STRK',
+  strc: 'STRC',
+  strd: 'STRD',
 };
 
 const CHART_OPTIONS = {
@@ -338,7 +348,7 @@ function renderCards(dataMap, mnavData) {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div class="ticker" style="color:${COLORS[ticker]};">${ticker.toUpperCase()}</div>
+      <div class="ticker" style="color:${COLORS[ticker]};">${LABELS[ticker]}</div>
       <div class="price">${priceStr}</div>
       <div class="change ${cls}">${arrow} ${Math.abs(pct)}%</div>
     `;
@@ -396,7 +406,7 @@ async function renderAll() {
     Object.entries(COLORS).map(([k, c]) => `
       <div class="legend-item">
         <div class="legend-dot" style="background:${c}"></div>
-        ${k.toUpperCase()}
+        ${LABELS[k]}
       </div>`).join('');
 
   // ── mNAV 차트 ──
