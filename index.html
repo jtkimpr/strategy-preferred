@@ -156,17 +156,17 @@
 
   <!-- mNAV 설정 -->
   <section>
-    <div class="section-title">mNAV 계산 설정</div>
+    <div class="section-title">mNAV 계산 기준</div>
     <div class="config-bar">
       <div class="config-item">
-        <label>Strategy BTC 보유량</label>
-        <input type="number" id="btc-holdings" value="738731" />
+        <label>BTC 보유량 (최신 공시)</label>
+        <span id="display-btc-holdings" style="color:#d1d4dc; font-size:13px;">—</span>
       </div>
       <div class="config-item">
-        <label>MSTR 발행주식수</label>
-        <input type="number" id="mstr-shares" value="342225000" />
+        <label>MSTR 발행주식수 (최신)</label>
+        <span id="display-mstr-shares" style="color:#d1d4dc; font-size:13px;">—</span>
       </div>
-      <button id="refresh-btn" onclick="renderAll()">차트 갱신</button>
+      <span style="font-size:11px; color:#787b86;">공시 이력 반영 · 날짜별 실제값 적용</span>
     </div>
   </section>
 
@@ -256,14 +256,24 @@ const CHART_OPTIONS = {
 async function loadCSV(ticker) {
   const res = await fetch(`data/${ticker}.csv`);
   const text = await res.text();
-  const lines = text.trim().split('\n').slice(1); // 헤더 제거
+  const lines = text.trim().split('\n').slice(1);
   return lines
     .filter(l => l.trim())
     .map(l => {
-      const [date, price] = l.split(',');
-      return { time: date.trim(), value: parseFloat(price.trim()) };
+      const [date, val] = l.split(',');
+      return { time: date.trim(), value: parseFloat(val.trim()) };
     })
     .filter(d => !isNaN(d.value));
+}
+
+// 스텝 함수: 날짜 기준으로 가장 최근 이전값 반환
+function getStepValue(history, date) {
+  let val = history[0].value;
+  for (const entry of history) {
+    if (entry.time <= date) val = entry.value;
+    else break;
+  }
+  return val;
 }
 
 // ─────────────────────────────────────────────
@@ -319,22 +329,22 @@ function createChart(containerId, extraOptions = {}) {
 }
 
 // ─────────────────────────────────────────────
-//  mNAV 계산
+//  mNAV 계산 (날짜별 실제 BTC 보유량 · 주식수 반영)
 // ─────────────────────────────────────────────
-function calcMNAV(mstrData, btcData) {
-  const btcHoldings = parseFloat(document.getElementById('btc-holdings').value);
-  const mstrShares  = parseFloat(document.getElementById('mstr-shares').value);
-  if (!btcHoldings || !mstrShares) return [];
-
+function calcMNAV(mstrData, btcData, btcHoldingsHistory, mstrSharesHistory) {
   const btcMap = {};
   btcData.forEach(d => { btcMap[d.time] = d.value; });
 
   return mstrData
     .filter(d => btcMap[d.time])
-    .map(d => ({
-      time: d.time,
-      value: parseFloat(((d.value * mstrShares) / (btcHoldings * btcMap[d.time])).toFixed(4))
-    }));
+    .map(d => {
+      const holdings = getStepValue(btcHoldingsHistory, d.time);
+      const shares   = getStepValue(mstrSharesHistory,  d.time);
+      return {
+        time: d.time,
+        value: parseFloat(((d.value * shares) / (holdings * btcMap[d.time])).toFixed(4))
+      };
+    });
 }
 
 // ─────────────────────────────────────────────
@@ -347,11 +357,22 @@ async function renderAll() {
     TICKERS.map(async t => { dataMap[t] = await loadCSV(t); })
   );
 
+  const btcHoldingsHistory = await loadCSV('btc_holdings');
+  const mstrSharesHistory  = await loadCSV('mstr_shares');
+
+  // config 표시 업데이트
+  const latestHoldings = btcHoldingsHistory[btcHoldingsHistory.length - 1];
+  const latestShares   = mstrSharesHistory[mstrSharesHistory.length - 1];
+  document.getElementById('display-btc-holdings').textContent =
+    latestHoldings.value.toLocaleString('en-US') + ' BTC  (' + latestHoldings.time + ')';
+  document.getElementById('display-mstr-shares').textContent =
+    latestShares.value.toLocaleString('en-US') + '주  (' + latestShares.time + ')';
+
   // 카드
   renderCards(dataMap);
 
   // mNAV 차트
-  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc']);
+  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc'], btcHoldingsHistory, mstrSharesHistory);
   if (mnavData.length > 0) {
     const mnavChart = createChart('chart-mnav', {});
     const mnavSeries = mnavChart.addLineSeries({
