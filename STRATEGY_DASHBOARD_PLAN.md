@@ -1,8 +1,7 @@
 # Strategy Dashboard — 프로젝트 계획서
 
 > 최초 작성: 2026-03-15
-> 업데이트: 2026-03-16
-> 작성 도구: claude.ai (기획 단계 대화 기반)
+> 최종 업데이트: 2026-03-16
 
 ---
 
@@ -11,136 +10,174 @@
 미국 증시에 상장된 Strategy 관련 유가증권과 BTC의 가격을 추적하고,
 커스텀 지표(mNAV)를 시각적 그래프로 보여주는 웹 대시보드 구축.
 
-- **운영 형태**: 소수 지인과 공유 (비공개 접근)
-- **호스팅**: 기존 운영 중인 정적 사이트에 페이지 추가
-- **개발 환경**: 여러 로컬 기기에서 작업 (GitHub로 동기화)
+- **접속 주소**: `https://jtkimpr.github.io/strategy-preferred`
+- **호스팅**: GitHub Pages (Public 레포)
+- **개발 환경**: MacBook Pro, Claude Code CLI, GitHub 동기화
+- **로컬 미리보기**: `python3 -m http.server 8080` → `http://localhost:8080`
 
 ---
 
-## 2. 추적 대상 유가증권
+## 2. 추적 대상
 
-| 티커 | 종류 | 비고 |
-|------|------|------|
-| BTC | 암호화폐 | CoinGecko API |
-| MSTR | 보통주 | Strategy 본주 |
-| STRF | 우선주 | |
-| STRK | 우선주 | |
-| STRC | 우선주 | |
-| STRD | 우선주 | 최근 상장, 데이터 불안정 가능성 있음 |
+| 티커 | 종류 | 데이터 출처 |
+|------|------|------------|
+| BTC  | 암호화폐 | CoinGecko API |
+| MSTR | 보통주 | Finnhub API |
+| STRF | 우선주 | Finnhub API |
+| STRK | 우선주 | Finnhub API |
+| STRC | 우선주 | Finnhub API |
+| STRD | 우선주 | Finnhub API |
 
 ---
 
-## 3. 커스텀 지표
+## 3. 핵심 지표: mNAV
 
-### mNAV (프리미엄/NAV 비율)
+### 계산식
 
 ```
-mNAV = MSTR 시가총액 ÷ (Strategy BTC 보유량 × BTC 가격)
+mNAV = MSTR 시가총액 ÷ (BTC 보유량 × BTC 가격 − 총 금융부채)
 ```
 
-- 1.0 = BTC 순자산과 동일 가치
-- 역사적 범위: 약 1.5x ~ 3.5x
-- BTC 보유량은 공시 기반 수동 업데이트 (실시간 불가)
+- **분자**: MSTR 주가 × 발행주식수
+- **분모**: BTC 순자산 가치 (BTC 가치에서 부채 차감)
+- 1.0 = BTC 순자산과 동일 가치 / 역사적 범위: 약 1.5x ~ 3.5x
+- strategy.com 기준과 동일한 방식 (부채 차감 적용)
+
+### 데이터 소스 및 주의사항
+
+| 항목 | 파일 | 출처 | 업데이트 주기 |
+|------|------|------|-------------|
+| BTC 보유량 | `btc_holdings.csv` | SEC EDGAR 8-K | 매수 공시 시 |
+| 발행주식수 | `mstr_shares.csv` | Finnhub profile2 | 분기 (수일 지연) |
+| 총 금융부채 | `mstr_debt.csv` | SEC EDGAR XBRL | 분기 (10-K/10-Q) |
+
+- 부채 데이터는 분기 공시 기준 → 최신 발행 부채와 차이 발생 가능
+- Q1 2026 10-Q 공시(5월경) 후 자동 수렴 예정
 
 ---
 
-## 4. 기술 스택
-
-| 항목 | 선택 | 비고 |
-|------|------|------|
-| 호스팅 | 기존 정적 사이트에 HTML 페이지 추가 | 별도 서버 불필요 |
-| 백엔드 | 없음 | 브라우저에서 CSV 직접 로드 |
-| 가격 데이터 | CSV 파일 (GitHub 레포 내 보관) | 브라우저가 직접 읽음 |
-| 주가 API | Finnhub 또는 Alpha Vantage | 자동 업데이트용 (GitHub Actions) |
-| BTC API | CoinGecko | 자동 업데이트용 (GitHub Actions) |
-| 스케줄러 | GitHub Actions | 하루 2회 자동 실행 (00:00, 12:00 KST) |
-| 차트 라이브러리 | TradingView Lightweight Charts 또는 Recharts | 미확정 |
-| 접근 제한 | 비밀번호 페이지 또는 URL 비공개 | 미확정 |
-
----
-
-## 5. 데이터 흐름
+## 4. 파일 구조
 
 ```
-[자동 업데이트 — 하루 2회 (GitHub Actions)]
-  CoinGecko API          → BTC 종가
-  Finnhub / Alpha Vantage → MSTR, STRF, STRK, STRC, STRD 종가
-       ↓
-  CSV 파일에 행 추가 → GitHub 레포에 자동 커밋
+strategy-preferred/
+├── index.html                          # 대시보드 메인 페이지
+├── data/
+│   ├── btc.csv                         # BTC 일별 가격
+│   ├── mstr.csv                        # MSTR 일별 가격
+│   ├── strf.csv / strk.csv / strc.csv / strd.csv
+│   ├── btc_holdings.csv                # BTC 누적 보유량 이력 (매수 이벤트)
+│   ├── mstr_shares.csv                 # MSTR 발행주식수 이력 (분기)
+│   └── mstr_debt.csv                   # 총 금융부채 이력 (분기)
+├── scripts/
+│   ├── update_prices.py                # 가격 데이터 자동 업데이트
+│   └── update_holdings.py              # 보유량·주식수·부채 자동 업데이트
+└── .github/workflows/
+    ├── update-prices.yml               # 하루 2회 (00:00, 12:00 KST)
+    └── update-holdings.yml             # 하루 1회 (00:00 KST)
+```
 
-[대시보드 — 브라우저]
-  GitHub 레포의 CSV 파일 로드
-  수동 입력 (공시 기반) → Strategy BTC 보유량
-       ↓
-  지표 계산 (브라우저 내 JS)  ← mNAV 계산
-       ↓
-  차트 렌더링
+### CSV 형식
+
+```
+date,price          ← 가격 파일 (YYYY-MM-DD, 소수점 가격)
+date,holdings       ← btc_holdings.csv (누적 BTC 수량)
+date,shares         ← mstr_shares.csv (발행주식수)
+date,debt           ← mstr_debt.csv (총 부채, USD 단위)
 ```
 
 ---
 
-## 6. CSV 파일 구조 (예정)
+## 5. GitHub Actions 스케줄
 
-| 파일명 | 컬럼 구성 | 비고 |
-|--------|-----------|------|
-| `btc.csv` | date, price | CoinGecko |
-| `mstr.csv` | date, price | |
-| `strf.csv` | date, price | |
-| `strk.csv` | date, price | |
-| `strc.csv` | date, price | |
-| `strd.csv` | date, price | 데이터 불안정 가능성 |
+| 워크플로우 | 실행 시간 (KST) | 실행 스크립트 |
+|-----------|----------------|-------------|
+| `update-prices.yml` | 00:00, 12:00 (월~금) | `update_prices.py` |
+| `update-holdings.yml` | 00:00 (월~금) | `update_holdings.py` |
 
-- 기존 CSV는 수동으로 초기 데이터 포함
-- GitHub Actions가 매일 최신 가격 행을 추가·커밋
+- GitHub Secret: `FINNHUB_API_KEY` 등록 필요
+- 수동 실행: GitHub → Actions → 워크플로우 선택 → "Run workflow"
 
 ---
 
-## 7. 화면 구성 (초안)
+## 6. 스크립트 동작
 
-- [ ] 가격 현황 카드 (BTC, MSTR, 우선주 4종)
-- [ ] mNAV 시계열 차트
-- [ ] BTC 가격 시계열 차트
-- [ ] MSTR 가격 시계열 차트
-- [ ] 우선주 가격 시계열 차트 (STRF, STRK, STRC, STRD)
-- [ ] 데이터 최종 갱신 시각 표시
+### update_prices.py
+- Finnhub: MSTR/STRF/STRK/STRC/STRD 종가 조회
+- CoinGecko: BTC 종가 조회
+- 오늘 날짜 행 추가 (이미 있으면 업데이트)
+- 가격 0이면 스킵
 
----
-
-## 8. 개발 환경 설정
-
-- **로컬 기기**: MacBook Pro 16" (macOS Tahoe), Mac Mini M4
-- **코드 편집**: Claude Code CLI 활용
-- **동기화**: GitHub 레포지토리
-- **자동 업데이트**: GitHub Actions (기기 상태 무관하게 실행)
+### update_holdings.py
+1. **BTC 보유량**: SEC EDGAR 최신 8-K 파싱 ("BTC Update" 섹션 → 6자리 숫자)
+2. **발행주식수**: Finnhub profile2 API (`shareOutstanding × 1,000,000`)
+3. **총 금융부채**: SEC EDGAR XBRL (`LongTermDebt`, 10-K/10-Q 기준)
+- 보유량·주식수는 감소 시 이상 데이터로 간주 → 스킵
+- 부채는 감소 허용 (상환 가능)
 
 ---
 
-## 9. 진행 단계 (로드맵)
+## 7. 대시보드 UI 구성
 
-- [ ] **Step 1** — GitHub 레포 생성 및 이 문서 업로드
-- [ ] **Step 2** — 기존 CSV 파일 정리 및 레포에 업로드 (초기 데이터 세팅)
-- [ ] **Step 3** — API 선택 및 테스트 (Finnhub vs Alpha Vantage)
-- [ ] **Step 4** — GitHub Actions 워크플로우 작성 (하루 2회 CSV 자동 업데이트)
-- [ ] **Step 5** — 프로토타입 HTML 페이지 제작 (로컬 테스트)
-- [ ] **Step 6** — 차트 라이브러리 선택 및 시각화 구현
-- [ ] **Step 7** — mNAV 계산 로직 구현 (BTC 보유량 수동 입력 포함)
-- [ ] **Step 8** — 기존 사이트에 페이지 통합
-- [ ] **Step 9** — 접근 제한 설정
-- [ ] **Step 10** — 지인 공유 테스트 및 피드백 반영
+1. **mNAV 계산 기준 bar** — 최신 BTC 보유량 / 발행주식수 / 총 금융부채 표시
+2. **가격 카드 (7개)** — mNAV / BTC / MSTR / STRF / STRK / STRC / STRD
+3. **성과 비교 차트** — 첫 거래일 = 100 기준 정규화, 7개 시리즈
+4. **mNAV 차트** — 부채 차감 기준 프리미엄 추이
+5. **개별 가격 차트 (6개)** — 3열 반응형 그리드
+
+### 색상 코드
+```javascript
+mnav: '#facc15'  // 밝은 노란색
+btc:  '#f7931a'  // 비트코인 오렌지
+mstr: '#ff6b35'  // 레드오렌지
+strf: '#2196f3'  // 파란색
+strk: '#a855f7'  // 보라색
+strc: '#4caf50'  // 초록색
+strd: '#e91e63'  // 핑크
+```
+
+### 차트 동기화
+- 모든 차트는 시간축 드래그 시 동기화 (`subscribeVisibleLogicalRangeChange`)
 
 ---
 
-## 10. 미결 사항
+## 8. 기술 스택
+
+| 항목 | 선택 |
+|------|------|
+| 차트 | TradingView Lightweight Charts v4.2.0 (CDN) |
+| 데이터 | CSV 파일 (fetch로 직접 로드) |
+| 호스팅 | GitHub Pages |
+| 자동화 | GitHub Actions |
+| 주가 API | Finnhub |
+| BTC API | CoinGecko |
+| 공시 API | SEC EDGAR (XBRL + 8-K 텍스트 파싱) |
+
+---
+
+## 9. 알려진 한계 및 주의사항
 
 | 항목 | 내용 |
 |------|------|
-| 차트 라이브러리 | TradingView Lightweight Charts vs Recharts 미확정 |
-| 접근 제한 방식 | 비밀번호 vs URL 비공개 미확정 |
-| STRD 데이터 | 최근 상장으로 API 지원 여부 확인 필요 |
-| BTC 보유량 갱신 | 수동 입력 주기 결정 필요 |
-| API 선택 | Finnhub vs Alpha Vantage 테스트 후 결정 |
-| CSV 날짜 형식 | YYYY-MM-DD 통일 여부 확인 필요 |
+| mNAV 부채 갭 | 최신 부채는 분기 공시까지 반영 불가 (Q1 2026 = 5월 반영 예정) |
+| 발행주식수 | Finnhub 수일 지연 가능 |
+| BTC 보유량 | 8-K 공시 후 다음 Actions 실행 시 반영 |
+| 주말/공휴일 | GitHub Actions 평일(월~금)만 실행 |
+| 접근 제한 | 현재 없음 (URL 아는 누구나 접근 가능) |
 
 ---
 
-*이 문서는 기획 단계 메모입니다. 개발 진행에 따라 지속 업데이트 예정.*
+## 10. 진행 현황
+
+- [x] GitHub 레포 생성 및 로컬 동기화
+- [x] CSV 파일 정규화 (YYYY-MM-DD, 콤마 제거, 오름차순 정렬)
+- [x] Finnhub + CoinGecko API 테스트 및 연동
+- [x] GitHub Actions 워크플로우 구성 (가격/보유량 분리)
+- [x] HTML 대시보드 제작 (TradingView Lightweight Charts)
+- [x] 정확한 역사적 mNAV 계산 (btc_holdings + mstr_shares 스텝함수)
+- [x] BTC 보유량 자동 수집 (SEC EDGAR 8-K 파싱)
+- [x] 발행주식수 자동 수집 (Finnhub)
+- [x] 총 금융부채 자동 수집 (SEC EDGAR XBRL)
+- [x] mNAV = 부채 차감 방식으로 변경 (strategy.com 기준)
+- [x] UI 개선 (mNAV 카드 선두, 정규화 비교 차트, 색상 구분, 차트 동기화)
+- [x] GitHub Pages 배포 (`https://jtkimpr.github.io/strategy-preferred`)
+- [ ] 접근 제한 설정 (선택 사항)
