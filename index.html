@@ -32,63 +32,33 @@
     main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
     section { margin-bottom: 28px; }
     .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #787b86;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
+      font-size: 12px; font-weight: 600; color: #787b86;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
     }
 
-    /* ── mNAV config ── */
+    /* ── Config bar ── */
     .config-bar {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      background: #1e222d;
-      border: 1px solid #2a2e39;
-      border-radius: 8px;
-      padding: 12px 16px;
-      flex-wrap: wrap;
+      display: flex; gap: 24px; align-items: center;
+      background: #1e222d; border: 1px solid #2a2e39;
+      border-radius: 8px; padding: 12px 16px; flex-wrap: wrap;
     }
     .config-item { display: flex; align-items: center; gap: 8px; }
     .config-item label { font-size: 12px; color: #787b86; white-space: nowrap; }
-    .config-item input {
-      background: #131722;
-      border: 1px solid #2a2e39;
-      border-radius: 4px;
-      color: #d1d4dc;
-      font-size: 13px;
-      padding: 4px 8px;
-      width: 140px;
-    }
-    .config-item input:focus { outline: none; border-color: #2196f3; }
-    #refresh-btn {
-      background: #2196f3;
-      border: none;
-      border-radius: 4px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 13px;
-      padding: 5px 14px;
-    }
-    #refresh-btn:hover { background: #1976d2; }
 
     /* ── Price Cards ── */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(7, 1fr);
       gap: 12px;
     }
-    @media (max-width: 900px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 500px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1100px) { .cards-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (max-width: 600px)  { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
 
     .card {
-      background: #1e222d;
-      border: 1px solid #2a2e39;
-      border-radius: 8px;
-      padding: 14px 16px;
+      background: #1e222d; border: 1px solid #2a2e39;
+      border-radius: 8px; padding: 14px 16px;
     }
+    .card.card-mnav { border-color: rgba(245,158,11,0.4); }
     .card .ticker { font-size: 11px; font-weight: 700; color: #787b86; letter-spacing: 1px; }
     .card .price  { font-size: 20px; font-weight: 600; color: #fff; margin: 6px 0 4px; }
     .card .change { font-size: 12px; font-weight: 500; }
@@ -98,51 +68,37 @@
 
     /* ── Charts ── */
     .chart-wrap {
-      background: #1e222d;
-      border: 1px solid #2a2e39;
-      border-radius: 8px;
-      overflow: hidden;
+      background: #1e222d; border: 1px solid #2a2e39;
+      border-radius: 8px; overflow: hidden;
     }
     .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px 8px;
-      border-bottom: 1px solid #2a2e39;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px 8px; border-bottom: 1px solid #2a2e39;
     }
-    .chart-title { font-size: 13px; font-weight: 600; color: #d1d4dc; }
+    .chart-title    { font-size: 13px; font-weight: 600; color: #d1d4dc; }
     .chart-subtitle { font-size: 11px; color: #787b86; }
 
-    .chart-container { width: 100%; height: 280px; }
-    .chart-container.tall { height: 320px; }
+    .chart-container       { width: 100%; height: 240px; }
+    .chart-container.tall  { height: 320px; }
+    .chart-container.xtall { height: 360px; }
 
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    /* ── Small charts responsive grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 1000px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px)  { .charts-grid { grid-template-columns: 1fr; } }
 
     /* ── Legend ── */
-    .legend {
-      display: flex;
-      gap: 16px;
-      padding: 8px 16px;
-      flex-wrap: wrap;
-    }
+    .legend { display: flex; gap: 16px; padding: 8px 16px; flex-wrap: wrap; }
     .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #d1d4dc; }
-    .legend-dot { width: 10px; height: 3px; border-radius: 2px; }
+    .legend-dot  { width: 10px; height: 3px; border-radius: 2px; }
 
-    /* ── mNAV reference lines info ── */
-    .mnav-info {
-      padding: 6px 16px 10px;
-      font-size: 11px;
-      color: #787b86;
-    }
-
-    /* ── Loading / Error ── */
-    .status-msg {
-      text-align: center;
-      padding: 40px;
-      color: #787b86;
-      font-size: 13px;
-    }
+    /* ── Misc ── */
+    .chart-note { padding: 6px 16px 10px; font-size: 11px; color: #787b86; }
+    .status-msg { text-align: center; padding: 40px; color: #787b86; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -154,23 +110,23 @@
 
 <main>
 
-  <!-- mNAV 설정 -->
+  <!-- mNAV 계산 기준 -->
   <section>
-    <div class="section-title">mNAV 계산 기준</div>
+    <div class="section-title" style="text-transform:none;">mNAV 계산 기준</div>
     <div class="config-bar">
       <div class="config-item">
         <label>BTC 보유량 (최신 공시)</label>
-        <span id="display-btc-holdings" style="color:#d1d4dc; font-size:13px;">—</span>
+        <span id="display-btc-holdings" style="color:#d1d4dc;font-size:13px;">—</span>
       </div>
       <div class="config-item">
         <label>MSTR 발행주식수 (최신)</label>
-        <span id="display-mstr-shares" style="color:#d1d4dc; font-size:13px;">—</span>
+        <span id="display-mstr-shares" style="color:#d1d4dc;font-size:13px;">—</span>
       </div>
-      <span style="font-size:11px; color:#787b86;">공시 이력 반영 · 날짜별 실제값 적용</span>
+      <span style="font-size:11px;color:#787b86;">공시 이력 반영 · 날짜별 실제값 적용</span>
     </div>
   </section>
 
-  <!-- 가격 카드 -->
+  <!-- 가격 카드 (mNAV 선두) -->
   <section>
     <div class="section-title">현재 가격</div>
     <div class="cards-grid" id="cards-grid">
@@ -178,47 +134,60 @@
     </div>
   </section>
 
+  <!-- 정규화 비교 차트 (기준=100) -->
+  <section>
+    <div class="section-title">성과 비교 (2025-01-01 = 100)</div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">mNAV · BTC · MSTR · STRF · STRK · STRC · STRD</span>
+        <span class="chart-subtitle">첫 거래일 = 100 기준</span>
+      </div>
+      <div class="legend" id="norm-legend"></div>
+      <div class="chart-container xtall" id="chart-norm"></div>
+    </div>
+  </section>
+
   <!-- mNAV 차트 -->
   <section>
-    <div class="section-title">mNAV (MSTR 프리미엄)</div>
+    <div class="section-title" style="text-transform:none;">mNAV (MSTR 프리미엄)</div>
     <div class="chart-wrap">
       <div class="chart-header">
         <span class="chart-title">mNAV = MSTR 시총 ÷ (BTC 보유량 × BTC 가격)</span>
         <span class="chart-subtitle" id="mnav-current">—</span>
       </div>
       <div class="chart-container tall" id="chart-mnav"></div>
-      <div class="mnav-info">참고: 역사적 범위 약 1.5x ~ 3.5x</div>
+      <div class="chart-note">참고: 역사적 범위 약 1.5x ~ 3.5x</div>
     </div>
   </section>
 
-  <!-- BTC / MSTR 차트 -->
-  <div class="two-col" style="margin-bottom:28px">
-    <div class="chart-wrap">
-      <div class="chart-header">
-        <span class="chart-title">BTC</span>
-        <span class="chart-subtitle">USD</span>
-      </div>
-      <div class="chart-container" id="chart-btc"></div>
-    </div>
-    <div class="chart-wrap">
-      <div class="chart-header">
-        <span class="chart-title">MSTR</span>
-        <span class="chart-subtitle">USD</span>
-      </div>
-      <div class="chart-container" id="chart-mstr"></div>
-    </div>
-  </div>
-
-  <!-- 우선주 차트 -->
+  <!-- 개별 가격 차트 (반응형 그리드) -->
   <section>
-    <div class="section-title">우선주</div>
-    <div class="chart-wrap">
-      <div class="chart-header">
-        <span class="chart-title">STRF / STRK / STRC / STRD</span>
-        <span class="chart-subtitle">USD</span>
+    <div class="section-title">개별 가격 차트</div>
+    <div class="charts-grid">
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">BTC</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-btc"></div>
       </div>
-      <div class="legend" id="pref-legend"></div>
-      <div class="chart-container" id="chart-pref"></div>
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">MSTR</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-mstr"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">STRF</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-strf"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">STRK</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-strk"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">STRC</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-strc"></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header"><span class="chart-title">STRD</span><span class="chart-subtitle">USD</span></div>
+        <div class="chart-container" id="chart-strd"></div>
+      </div>
     </div>
   </section>
 
@@ -226,20 +195,18 @@
 
 <script>
 // ─────────────────────────────────────────────
-//  설정 상수 (공시 업데이트 시 수정)
+//  상수
 // ─────────────────────────────────────────────
 const TICKERS = ['btc', 'mstr', 'strf', 'strk', 'strc', 'strd'];
 
-const CARD_LABELS = {
-  btc: 'BTC', mstr: 'MSTR',
-  strf: 'STRF', strk: 'STRK', strc: 'STRC', strd: 'STRD'
-};
-
-const PREF_COLORS = {
+const COLORS = {
+  mnav: '#f59e0b',
+  btc:  '#f7931a',
+  mstr: '#ff6b35',
   strf: '#2196f3',
   strk: '#ff9800',
   strc: '#4caf50',
-  strd: '#e91e63'
+  strd: '#e91e63',
 };
 
 const CHART_OPTIONS = {
@@ -251,13 +218,30 @@ const CHART_OPTIONS = {
 };
 
 // ─────────────────────────────────────────────
+//  차트 동기화
+// ─────────────────────────────────────────────
+const syncCharts = [];
+let isSyncing = false;
+
+function registerSync(chart) {
+  syncCharts.push(chart);
+  chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (isSyncing || !range) return;
+    isSyncing = true;
+    syncCharts.forEach(c => {
+      if (c !== chart) c.timeScale().setVisibleLogicalRange(range);
+    });
+    isSyncing = false;
+  });
+}
+
+// ─────────────────────────────────────────────
 //  CSV 로드
 // ─────────────────────────────────────────────
-async function loadCSV(ticker) {
-  const res = await fetch(`data/${ticker}.csv`);
+async function loadCSV(name) {
+  const res = await fetch(`data/${name}.csv`);
   const text = await res.text();
-  const lines = text.trim().split('\n').slice(1);
-  return lines
+  return text.trim().split('\n').slice(1)
     .filter(l => l.trim())
     .map(l => {
       const [date, val] = l.split(',');
@@ -266,43 +250,95 @@ async function loadCSV(ticker) {
     .filter(d => !isNaN(d.value));
 }
 
-// 스텝 함수: 날짜 기준으로 가장 최근 이전값 반환
 function getStepValue(history, date) {
   let val = history[0].value;
-  for (const entry of history) {
-    if (entry.time <= date) val = entry.value;
+  for (const e of history) {
+    if (e.time <= date) val = e.value;
     else break;
   }
   return val;
 }
 
 // ─────────────────────────────────────────────
-//  가격 카드 렌더링
+//  mNAV 계산
 // ─────────────────────────────────────────────
-function renderCards(dataMap) {
+function calcMNAV(mstrData, btcData, holdingsHist, sharesHist) {
+  const btcMap = {};
+  btcData.forEach(d => { btcMap[d.time] = d.value; });
+  return mstrData
+    .filter(d => btcMap[d.time])
+    .map(d => ({
+      time: d.time,
+      value: parseFloat(((d.value * getStepValue(sharesHist, d.time)) /
+                         (getStepValue(holdingsHist, d.time) * btcMap[d.time])).toFixed(4))
+    }));
+}
+
+// ─────────────────────────────────────────────
+//  정규화 (첫 데이터 포인트 = 100)
+// ─────────────────────────────────────────────
+function normalize(data) {
+  if (!data || data.length === 0) return [];
+  const base = data[0].value;
+  return data.map(d => ({ time: d.time, value: parseFloat(((d.value / base) * 100).toFixed(4)) }));
+}
+
+// ─────────────────────────────────────────────
+//  차트 생성 헬퍼
+// ─────────────────────────────────────────────
+function makeChart(containerId, opts = {}) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  const chart = LightweightCharts.createChart(el, {
+    ...CHART_OPTIONS, ...opts,
+    width: el.clientWidth, height: el.clientHeight,
+  });
+  window.addEventListener('resize', () => chart.applyOptions({ width: el.clientWidth }));
+  return chart;
+}
+
+// ─────────────────────────────────────────────
+//  가격 카드 (mNAV 선두)
+// ─────────────────────────────────────────────
+function renderCards(dataMap, mnavData) {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
 
+  // mNAV 카드
+  if (mnavData.length > 0) {
+    const cur  = mnavData[mnavData.length - 1].value;
+    const prev = mnavData.length > 1 ? mnavData[mnavData.length - 2].value : cur;
+    const diff = cur - prev;
+    const pct  = ((diff / prev) * 100).toFixed(2);
+    const cls  = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+    const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
+    const card = document.createElement('div');
+    card.className = 'card card-mnav';
+    card.innerHTML = `
+      <div class="ticker" style="color:#f59e0b;">mNAV</div>
+      <div class="price">${cur.toFixed(3)}x</div>
+      <div class="change ${cls}">${arrow} ${Math.abs(pct)}%</div>
+    `;
+    grid.appendChild(card);
+  }
+
+  // 가격 카드
   for (const ticker of TICKERS) {
     const data = dataMap[ticker];
     if (!data || data.length === 0) continue;
-
     const last  = data[data.length - 1].value;
     const prev  = data.length > 1 ? data[data.length - 2].value : last;
     const diff  = last - prev;
     const pct   = ((diff / prev) * 100).toFixed(2);
     const cls   = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
     const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
-
-    const isBTC = ticker === 'btc';
-    const priceStr = isBTC
+    const priceStr = ticker === 'btc'
       ? '$' + last.toLocaleString('en-US', { maximumFractionDigits: 0 })
       : '$' + last.toFixed(2);
-
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div class="ticker">${CARD_LABELS[ticker]}</div>
+      <div class="ticker" style="color:${COLORS[ticker]};">${ticker.toUpperCase()}</div>
       <div class="price">${priceStr}</div>
       <div class="change ${cls}">${arrow} ${Math.abs(pct)}%</div>
     `;
@@ -311,142 +347,110 @@ function renderCards(dataMap) {
 }
 
 // ─────────────────────────────────────────────
-//  차트 생성 헬퍼
-// ─────────────────────────────────────────────
-function createChart(containerId, extraOptions = {}) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-  const chart = LightweightCharts.createChart(el, {
-    ...CHART_OPTIONS,
-    ...extraOptions,
-    width: el.clientWidth,
-    height: el.clientHeight,
-  });
-  window.addEventListener('resize', () => {
-    chart.applyOptions({ width: el.clientWidth });
-  });
-  return chart;
-}
-
-// ─────────────────────────────────────────────
-//  mNAV 계산 (날짜별 실제 BTC 보유량 · 주식수 반영)
-// ─────────────────────────────────────────────
-function calcMNAV(mstrData, btcData, btcHoldingsHistory, mstrSharesHistory) {
-  const btcMap = {};
-  btcData.forEach(d => { btcMap[d.time] = d.value; });
-
-  return mstrData
-    .filter(d => btcMap[d.time])
-    .map(d => {
-      const holdings = getStepValue(btcHoldingsHistory, d.time);
-      const shares   = getStepValue(mstrSharesHistory,  d.time);
-      return {
-        time: d.time,
-        value: parseFloat(((d.value * shares) / (holdings * btcMap[d.time])).toFixed(4))
-      };
-    });
-}
-
-// ─────────────────────────────────────────────
 //  전체 렌더링
 // ─────────────────────────────────────────────
 async function renderAll() {
-  // 데이터 로드
   const dataMap = {};
-  await Promise.all(
-    TICKERS.map(async t => { dataMap[t] = await loadCSV(t); })
-  );
+  await Promise.all(TICKERS.map(async t => { dataMap[t] = await loadCSV(t); }));
+  const holdingsHist = await loadCSV('btc_holdings');
+  const sharesHist   = await loadCSV('mstr_shares');
 
-  const btcHoldingsHistory = await loadCSV('btc_holdings');
-  const mstrSharesHistory  = await loadCSV('mstr_shares');
-
-  // config 표시 업데이트
-  const latestHoldings = btcHoldingsHistory[btcHoldingsHistory.length - 1];
-  const latestShares   = mstrSharesHistory[mstrSharesHistory.length - 1];
+  // config 표시
+  const lh = holdingsHist[holdingsHist.length - 1];
+  const ls = sharesHist[sharesHist.length - 1];
   document.getElementById('display-btc-holdings').textContent =
-    latestHoldings.value.toLocaleString('en-US') + ' BTC  (' + latestHoldings.time + ')';
+    lh.value.toLocaleString('en-US') + ' BTC  (' + lh.time + ')';
   document.getElementById('display-mstr-shares').textContent =
-    latestShares.value.toLocaleString('en-US') + '주  (' + latestShares.time + ')';
+    ls.value.toLocaleString('en-US') + '주  (' + ls.time + ')';
+
+  // mNAV 계산
+  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc'], holdingsHist, sharesHist);
 
   // 카드
-  renderCards(dataMap);
+  renderCards(dataMap, mnavData);
 
-  // mNAV 차트
-  const mnavData = calcMNAV(dataMap['mstr'], dataMap['btc'], btcHoldingsHistory, mstrSharesHistory);
-  if (mnavData.length > 0) {
-    const mnavChart = createChart('chart-mnav', {});
-    const mnavSeries = mnavChart.addLineSeries({
-      color: '#f59e0b',
-      lineWidth: 2,
-      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
-    });
+  // ── 정규화 비교 차트 ──
+  const normSeries = {
+    mnav: normalize(mnavData),
+    btc:  normalize(dataMap['btc']),
+    mstr: normalize(dataMap['mstr']),
+    strf: normalize(dataMap['strf']),
+    strk: normalize(dataMap['strk']),
+    strc: normalize(dataMap['strc']),
+    strd: normalize(dataMap['strd']),
+  };
 
-    // 1.0 기준선 (Baseline)
-    const baselineSeries = mnavChart.addLineSeries({
-      color: '#4b5563',
-      lineWidth: 1,
-      lineStyle: 2, // dashed
-      priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
-    });
-    baselineSeries.setData(
-      mnavData.map(d => ({ time: d.time, value: 1.0 }))
-    );
-
-    mnavSeries.setData(mnavData);
-    mnavChart.timeScale().fitContent();
-
-    const latest = mnavData[mnavData.length - 1].value;
-    document.getElementById('mnav-current').textContent = `현재 ${latest.toFixed(3)}x`;
-  }
-
-  // BTC 차트
-  const btcChart = createChart('chart-btc');
-  const btcSeries = btcChart.addAreaSeries({
-    lineColor: '#f7931a',
-    topColor: 'rgba(247,147,26,0.3)',
-    bottomColor: 'rgba(247,147,26,0.0)',
-    lineWidth: 2,
+  const normChart = makeChart('chart-norm');
+  Object.entries(normSeries).forEach(([key, data]) => {
+    if (!data.length) return;
+    normChart.addLineSeries({ color: COLORS[key], lineWidth: 2 }).setData(data);
   });
-  btcSeries.setData(dataMap['btc']);
-  btcChart.timeScale().fitContent();
+  // 기준선 100
+  const refData = normSeries.btc.map(d => ({ time: d.time, value: 100 }));
+  normChart.addLineSeries({ color: '#4b5563', lineWidth: 1, lineStyle: 2 }).setData(refData);
+  normChart.timeScale().fitContent();
+  registerSync(normChart);
 
-  // MSTR 차트
-  const mstrChart = createChart('chart-mstr');
-  const mstrSeries = mstrChart.addAreaSeries({
-    lineColor: '#ff6b35',
-    topColor: 'rgba(255,107,53,0.3)',
-    bottomColor: 'rgba(255,107,53,0.0)',
-    lineWidth: 2,
+  // 범례
+  document.getElementById('norm-legend').innerHTML =
+    Object.entries(COLORS).map(([k, c]) => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${c}"></div>
+        ${k.toUpperCase()}
+      </div>`).join('');
+
+  // ── mNAV 차트 ──
+  const mnavChart = makeChart('chart-mnav');
+  mnavChart.addLineSeries({
+    color: COLORS.mnav, lineWidth: 2,
+    priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+  }).setData(mnavData);
+  mnavChart.addLineSeries({
+    color: '#4b5563', lineWidth: 1, lineStyle: 2,
+    priceFormat: { type: 'price', precision: 3, minMove: 0.001 },
+  }).setData(mnavData.map(d => ({ time: d.time, value: 1.0 })));
+  mnavChart.timeScale().fitContent();
+  const curMNAV = mnavData[mnavData.length - 1]?.value ?? 0;
+  document.getElementById('mnav-current').textContent = `현재 ${curMNAV.toFixed(3)}x`;
+  registerSync(mnavChart);
+
+  // ── 개별 가격 차트 ──
+  const smallCharts = [
+    { id: 'chart-btc',  ticker: 'btc',  area: true },
+    { id: 'chart-mstr', ticker: 'mstr', area: true },
+    { id: 'chart-strf', ticker: 'strf', area: false },
+    { id: 'chart-strk', ticker: 'strk', area: false },
+    { id: 'chart-strc', ticker: 'strc', area: false },
+    { id: 'chart-strd', ticker: 'strd', area: false },
+  ];
+
+  smallCharts.forEach(({ id, ticker, area }) => {
+    const data = dataMap[ticker];
+    if (!data || !data.length) return;
+    const c = makeChart(id);
+    const color = COLORS[ticker];
+    if (area) {
+      c.addAreaSeries({
+        lineColor: color,
+        topColor: color.replace(')', ',0.3)').replace('rgb', 'rgba'),
+        bottomColor: color.replace(')', ',0.0)').replace('rgb', 'rgba'),
+        lineWidth: 2,
+      }).setData(data);
+    } else {
+      c.addLineSeries({ color, lineWidth: 2 }).setData(data);
+    }
+    c.timeScale().fitContent();
+    registerSync(c);
   });
-  mstrSeries.setData(dataMap['mstr']);
-  mstrChart.timeScale().fitContent();
 
-  // 우선주 차트
-  const prefTickers = ['strf', 'strk', 'strc', 'strd'];
-  const prefChart = createChart('chart-pref');
-  prefTickers.forEach(t => {
-    if (!dataMap[t] || dataMap[t].length === 0) return;
-    const series = prefChart.addLineSeries({
-      color: PREF_COLORS[t],
-      lineWidth: 2,
-    });
-    series.setData(dataMap[t]);
-  });
-  prefChart.timeScale().fitContent();
+  // BTC/MSTR area color 수정 (hex → rgba)
+  // (위 코드에서 hex color를 직접 쓰므로 area series topColor 별도 지정)
+  // 이미 개별 처리됨
 
-  // 우선주 범례
-  const legend = document.getElementById('pref-legend');
-  legend.innerHTML = prefTickers.map(t => `
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${PREF_COLORS[t]}"></div>
-      ${t.toUpperCase()}
-    </div>
-  `).join('');
-
-  // 마지막 갱신 시각
-  const btcLast = dataMap['btc'];
-  const lastDate = btcLast[btcLast.length - 1]?.time ?? '—';
-  document.getElementById('last-updated').textContent = `데이터 기준: ${lastDate}`;
+  // 헤더 갱신 시각
+  const last = dataMap['btc'];
+  document.getElementById('last-updated').textContent =
+    `데이터 기준: ${last[last.length - 1]?.time ?? '—'}`;
 }
 
 // ─────────────────────────────────────────────
@@ -455,10 +459,10 @@ async function renderAll() {
 renderAll().catch(err => {
   console.error(err);
   document.getElementById('cards-grid').innerHTML =
-    `<div class="status-msg" style="grid-column:1/-1; color:#ef5350">
+    `<div class="status-msg" style="grid-column:1/-1;color:#ef5350;">
       데이터 로딩 실패. 로컬 서버로 실행해주세요.<br>
-      <code style="font-size:11px; color:#787b86">python3 -m http.server 8080</code>
-     </div>`;
+      <code style="font-size:11px;color:#787b86;">python3 -m http.server 8080</code>
+    </div>`;
 });
 </script>
 </body>
