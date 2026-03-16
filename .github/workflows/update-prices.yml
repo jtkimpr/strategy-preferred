@@ -6,6 +6,9 @@ on:
     - cron: '0 3 * * 2-6'    # 12:00 KST (월~금)
   workflow_dispatch:           # 수동 실행 가능
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
